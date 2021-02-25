@@ -5,6 +5,54 @@ from training_tools import *
 
 
 
+"""
+Functions to setup various game playing agents
+"""
+
+def random_Agent(state):
+    """
+    Given a board state the random_Agent will return a random valid move
+    """
+    poss = []
+    for j in range(7):
+        if state[0,j] == 0:
+            poss.append(j)
+    
+    return np.random.choice(poss)
+
+
+
+
+def setup_Agent(filename):
+    """
+    Function to initialize the DQN agent
+    """
+    input_dims = 6*7
+    action_space = tuple(range(7))
+    n_actions = 7
+
+    h1_dims = 512
+    h2_dims = 256
+
+
+    agent = Agent(lr=0.001, gamma=0.95, epsilon=1, epsilon_dec=0.995, epsilon_min=0.01,
+                  input_shape=input_dims, h1_dims=h1_dims, h2_dims=h2_dims, action_space=action_space,
+                  fname=filename
+                  )
+
+
+    memory = ReplayBuffer(50000, input_dims, n_actions)
+
+    return agent, memory
+
+
+
+
+"""
+Main training Lopp
+"""
+
+
 
 if __name__ == '__main__':
 
