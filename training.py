@@ -3,6 +3,9 @@ from dqn import Agent
 from environment import ConnectFour
 from training_tools import *
 
+import time
+
+
 
 
 """
@@ -23,7 +26,7 @@ def random_Agent(state):
 
 
 
-def setup_Agent(filename):
+def setup_Agent(filename, epsilon):
     """
     Function to initialize the DQN agent
     """
@@ -35,7 +38,7 @@ def setup_Agent(filename):
     h2_dims = 256
 
 
-    agent = Agent(lr=0.001, gamma=0.95, epsilon=1, epsilon_dec=0.995, epsilon_min=0.01,
+    agent = Agent(lr=0.001, gamma=0.95, epsilon=epsilon, epsilon_dec=0.995, epsilon_min=0.01,
                   input_shape=input_dims, h1_dims=h1_dims, h2_dims=h2_dims, action_space=action_space,
                   fname=filename
                   )
@@ -61,17 +64,21 @@ if __name__ == '__main__':
 
     env = ConnectFour()
 
-    filename = 'p1.h5'
+    filename_1 = 'p1.h5'
+    filename_2 = 'p2.h5'
 
-    agent, memory = setup_Agent(filename)
+    agent_1, memory_1 = setup_Agent(filename_1, epsilon=1)
+
+    agent_2, memory_2 = setup_Agent(filename_2, epsilon=1)
 
     if load == True:
-        agent.load_model(filename)
+        agent_1.load_model(filename_1)
+        agent_2.load_model(filename_2)
         print('\n\n... Model Loaded ...\n\n')
 
 
 
-    batch_size = 512
+    batch_size = 1024
     frame_skips = 5000
 
 
@@ -101,36 +108,43 @@ if __name__ == '__main__':
 
             tries = 0
             while True:
-                if tries > 500:
+                if tries > 100:
                     action = random_Agent(state)
+
                 else:
-
                     if env.player == 1:
-                        action = agent.choose_action(state.flatten())
-                    else:
-                        action = random_Agent(state)
+                        action = agent_1.choose_action(state.flatten())
+                    elif env.player == 2:
+                        action = agent_2.choose_action(state.flatten())
 
-                    valid, state_, reward, winner = env.Step(action)
+
+
+                valid, state_, p1_rwd, p2_rwd, winner = env.Step(action)
+
+                # Store memory here to give negative reward for invalid moves
+                if env.player == 1 or env.done == True:
+                    memory_1.store_transition(state.flatten(), action, p1_rwd, state_.flatten(), env.done)
+            
+                if env.player == 2 or env.done == True:
+                    memory_2.store_transition(state.flatten(), action, p2_rwd, state_.flatten(), env.done)
 
                 if valid == True:
                     break
                 else:
                     tries += 1
 
-            
-            if env.player == 1 or done == True:
-                memory.store_transition(state.flatten(), action, reward, state_.flatten(), done)
 
-            if train == True and memory.mem_cntr > frame_skips:
-                agent.learn(batch_size, memory.sample_buffer(batch_size))
+            if train == True and memory_1.mem_cntr > frame_skips:
+                agent_1.learn(batch_size, memory_1.sample_buffer(batch_size))
+                agent_2.learn(batch_size, memory_2.sample_buffer(batch_size))
 
 
 
 
             state = state_
 
+            # Update current player here, easier to separate of board states for each player
             env.update_Players()
-
 
 
 
@@ -144,15 +158,20 @@ if __name__ == '__main__':
         else:
             wins[2] += 1
 
+
+
         p1_wins.append(wins[0])
         p2_wins.append(wins[1])
         draws.append(wins[2])
 
         plot_progress(episode, p1_wins, p2_wins, draws)
 
+        print('\n\nEpisode', episode, 'complete\n\n')
+
 
         if episode % 10 == 0 and train == True:
-            agent.save_model()
+            agent_1.save_model()
+            agent_2.save_model()
             print('\n... Model Saved ...\n')
 
 

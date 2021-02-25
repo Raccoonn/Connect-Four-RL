@@ -169,7 +169,9 @@ class ConnectFour:
 
 
         """
-        reward = 0
+        p1_rwd = 0
+        p2_rwd = 0
+
         winner = None
 
         if self.update_Board(action) == True:
@@ -183,18 +185,26 @@ class ConnectFour:
 
             if self.done == True:
                 if winner == 1:
-                    reward += 1
+                    p1_rwd += 10
+                    p2_rwd -= 10
                 elif winner == 2:
-                    reward -= 1
+                    p1_rwd -= 10
+                    p2_rwd += 10
                 elif winner == None:
-                    reward += 0.5
+                    p1_rwd += 5
+                    p2_rwd += 5
 
         # Catch for invalid move, prompting Player to choose another move
         else:
             valid = False
 
+            if self.player == 1:
+                p1_rwd -= 10
+            elif self.player == 2:
+                p2_rwd -= 10
 
-        return valid, self.board, reward, winner
+
+        return valid, self.board, p1_rwd, p2_rwd, winner
 
 
     
