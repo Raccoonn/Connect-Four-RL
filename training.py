@@ -62,10 +62,14 @@ if __name__ == '__main__':
     train = True
     load = False
 
+    single_agent = True
+
+
+
     env = ConnectFour()
 
-    filename_1 = 'p1.h5'
-    filename_2 = 'p2.h5'
+    filename_1 = 'p1_new.h5'
+    filename_2 = 'p2_new.h5'
 
     agent_1, memory_1 = setup_Agent(filename_1, epsilon=1)
 
@@ -73,8 +77,12 @@ if __name__ == '__main__':
 
     if load == True:
         agent_1.load_model(filename_1)
-        agent_2.load_model(filename_2)
+
+        if single_agent != True:
+            agent_2.load_model(filename_2)
+
         print('\n\n... Model Loaded ...\n\n')
+
 
 
 
@@ -113,9 +121,11 @@ if __name__ == '__main__':
 
                 else:
                     if env.player == 1:
-                        action = agent_1.choose_action(state.flatten())
+                        action, actions = agent_1.choose_action(state.flatten())
                     elif env.player == 2:
-                        action = agent_2.choose_action(state.flatten())
+                        if single_agent == True:
+                            action, actions = random_Agent(state), list(range(7))
+                        action, actions = agent_2.choose_action(state.flatten())
 
 
 
@@ -125,7 +135,7 @@ if __name__ == '__main__':
                 if env.player == 1 or env.done == True:
                     memory_1.store_transition(state.flatten(), action, p1_rwd, state_.flatten(), env.done)
             
-                if env.player == 2 or env.done == True:
+                if (env.player == 2 or env.done == True) and single_agent != True:
                     memory_2.store_transition(state.flatten(), action, p2_rwd, state_.flatten(), env.done)
 
                 if valid == True:
@@ -136,7 +146,9 @@ if __name__ == '__main__':
 
             if train == True and memory_1.mem_cntr > frame_skips:
                 agent_1.learn(batch_size, memory_1.sample_buffer(batch_size))
-                agent_2.learn(batch_size, memory_2.sample_buffer(batch_size))
+                
+                if single_agent == True:
+                    agent_2.learn(batch_size, memory_2.sample_buffer(batch_size))
 
 
 
@@ -171,7 +183,10 @@ if __name__ == '__main__':
 
         if episode % 10 == 0 and train == True:
             agent_1.save_model()
-            agent_2.save_model()
+
+            if single_agent != True:
+                agent_2.save_model()
+
             print('\n... Model Saved ...\n')
 
 

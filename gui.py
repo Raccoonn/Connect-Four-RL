@@ -3,6 +3,7 @@ from tkinter import *
 from tkinter import font
 
 import numpy as np
+from dqn import Agent
 
 
 
@@ -24,6 +25,27 @@ import numpy as np
         - Add reward function to Agents that increases reward for creating lines
           of pieces.
 """
+
+
+
+def setup_Agent(filename, epsilon):
+    """
+    Function to initialize the DQN agent
+    """
+    input_dims = 6*7
+    action_space = tuple(range(7))
+    n_actions = 7
+
+    h1_dims = 512
+    h2_dims = 256
+
+
+    agent = Agent(lr=0.001, gamma=0.95, epsilon=epsilon, epsilon_dec=0.995, epsilon_min=0.01,
+                  input_shape=input_dims, h1_dims=h1_dims, h2_dims=h2_dims, action_space=action_space,
+                  fname=filename
+                  )
+
+    return agent
 
 
 
@@ -102,6 +124,20 @@ class Terrain(Canvas):
         # Passes the mouse button event to the detection method
         self.bind('<Button-1>', self.Step)
 
+
+        self.agent_1 = setup_Agent('p1.h5', epsilon=0)
+        self.agent_2 = setup_Agent('p2.h5', epsilon=0)
+
+        self.agent_1.load_model('p1.h5')
+        self.agent_2.load_model('p2.h5')
+
+        state = self.get_Board().flatten()
+
+        action, actions = self.agent_1.choose_action(state)
+
+
+        info.t.config(text='P1 Predicts:' + str(actions) + '\nArgMax: ' + str(action+1),
+                      font=('Arial', 12))
 
 
 
@@ -232,6 +268,10 @@ class Terrain(Canvas):
             board_array = self.get_Board()
             winner = self.check_Win(board_array)
 
+
+            state = board_array.flatten()
+
+
             if winner == 1:
                 info.t.config(text='Player 1 Wins!')
             
@@ -246,12 +286,16 @@ class Terrain(Canvas):
                 # Change player and update info frame after each move
                 if self.player == 1:
                     self.player = 2
-                    info.t.config(text='Player 2 Turn')
+                    action, actions = self.agent_2.choose_action(state)
+                    info.t.config(text='P2 predicts:' + str(actions) + '\nArgMax: ' + str(action+1),
+                      font=('Arial', 12))
                     self.color = 'red'
 
                 elif self.player == 2:
                     self.player = 1
-                    info.t.config(text='Player 1 Turn')
+                    action, actions = self.agent_1.choose_action(state)
+                    info.t.config(text='P1 predicts:' + str(actions) + '\nArgMax: ' + str(action+1),
+                      font=('Arial', 12))
                     self.color = 'yellow'
 
 

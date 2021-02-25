@@ -36,9 +36,9 @@ class Agent:
 
         # Compile TF network
         self.q_eval = tf.keras.models.Sequential([
-                      tf.keras.layers.Dense(h1_dims, activation='tanh', input_shape=(input_shape,)),
-                      tf.keras.layers.Dense(h2_dims, activation='tanh'),
-                      tf.keras.layers.Dense(self.n_actions)
+                      tf.keras.layers.Dense(h1_dims, activation='relu', input_shape=(input_shape,)),
+                      tf.keras.layers.Dense(h2_dims, activation='relu'),
+                      tf.keras.layers.Dense(self.n_actions, 'relu')
             ])
 
         self.q_eval.compile(optimizer=tf.keras.optimizers.Adam(lr=lr), loss='mse')
@@ -57,14 +57,13 @@ class Agent:
             for j in range(7):
                 if state[0,j] == 0:
                     poss.append(j)
-            action = np.random.choice(poss)
-        
+            action, actions = np.random.choice(poss), poss        
         # Else preform forward pass using state input
         else:
             actions = self.q_eval.predict(state)
             action = np.argmax(actions)
 
-        return action
+        return action, np.around(actions, decimals=2)
 
 
 
