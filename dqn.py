@@ -4,12 +4,23 @@ import numpy as np
 
 
 
+"""
+    - Changed relu activation to LeakyReLU layers
+
+    - Changed input to 7*7, one hot for opponent move then game board
+
+
+"""
+
+
+
+
 
 
 class Agent:
     def __init__(self, lr, gamma, epsilon, epsilon_dec, epsilon_min,
                  input_shape, h1_dims, h2_dims, action_space,
-                 fname='model.h5'
+                 training_epochs=1, fname='model.h5'
                 ):
         """
         Initialize network with given hyperparameters
@@ -29,16 +40,21 @@ class Agent:
         self.action_space = action_space
         self.n_actions = len(action_space)
 
+        # Used to train for multiple epochs per training batch
+        self.training_epochs = training_epochs
+
+
         # Set filename for saving network
         self.fname = fname
 
 
-
         # Compile TF network
         self.q_eval = tf.keras.models.Sequential([
-                      tf.keras.layers.Dense(h1_dims, activation='relu', input_shape=(input_shape,)),
-                      tf.keras.layers.Dense(h2_dims, activation='relu'),
-                      tf.keras.layers.Dense(self.n_actions, 'relu')
+                      tf.keras.layers.Dense(h1_dims, input_shape=(input_shape,)),
+                      tf.keras.layers.LeakyReLU(alpha=0.3),
+                      tf.keras.layers.Dense(h2_dims),
+                      tf.keras.layers.LeakyReLU(alpha=0.3),
+                      tf.keras.layers.Dense(self.n_actions)
             ])
 
         self.q_eval.compile(optimizer=tf.keras.optimizers.Adam(lr=lr), loss='mse')
@@ -51,6 +67,7 @@ class Agent:
         Given a state choose next action
         """
         state = state[np.newaxis, :]
+
         # Choose random action if epsilon reached
         if np.random.random() < self.epsilon:
             poss = []
@@ -87,7 +104,11 @@ class Agent:
 
         q_target[batch_index, action_indices] = reward + self.gamma*np.max(q_next, axis=1)*done
 
-        history = self.q_eval.fit(state, q_target, verbose=0)
+
+        # Train batch for specified Epochs
+        for _ in range(self.training_epochs):
+            history = self.q_eval.fit(state, q_target, verbose=0)
+
 
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_dec

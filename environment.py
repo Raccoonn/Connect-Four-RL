@@ -39,13 +39,18 @@ class ConnectFour:
         """
         Reset game environment for new episode
         """
+        # Reset game state
         self.board = np.zeros((6,7))
         self.player = 1
         self.done = False
 
-        reward = 0
+        # No action taken prior to game start, action is just zeros
+        action_vec = np.zeros(7)
 
-        return self.board.flatten(), reward, self.done
+        # np.append flattens the arrays together for input
+        state = np.append(action_vec, self.board)
+
+        return state
 
 
 
@@ -185,26 +190,34 @@ class ConnectFour:
 
             if self.done == True:
                 if winner == 1:
-                    p1_rwd += 10
-                    p2_rwd -= 10
+                    p1_rwd += 1
+                    p2_rwd -= 1
                 elif winner == 2:
-                    p1_rwd -= 10
-                    p2_rwd += 10
+                    p1_rwd -= 1
+                    p2_rwd += 1
                 elif winner == None:
-                    p1_rwd += 5
-                    p2_rwd += 5
+                    p1_rwd += 0.5
+                    p2_rwd += 0.5
 
         # Catch for invalid move, prompting Player to choose another move
+        # returns negative reward
         else:
             valid = False
 
             if self.player == 1:
-                p1_rwd -= 10
+                p1_rwd -= 1
             elif self.player == 2:
-                p2_rwd -= 10
+                p2_rwd -= 1
+
+        
+        # combine one hot + game board as the new state
+        action_vec = np.zeros(7)
+        action_vec[action] = 1
+
+        state_ = np.append(action_vec, self.board)
 
 
-        return valid, self.board, p1_rwd, p2_rwd, winner
+        return valid, state_, p1_rwd, p2_rwd, winner
 
 
     

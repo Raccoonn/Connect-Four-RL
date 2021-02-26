@@ -9,21 +9,12 @@ from dqn import Agent
 
 
 """
-    - Currently GUI works.  Turns alternate depositing the current players piece 
-      color into the first available row of the board.
+    Changes:
+        - Need to modify function for adding pieces
 
-      
-    NEEDS:
-        - Win checker for rows, cols, diags
-        
-        - Initializing Agents as players.  Agent will print selected move, human
-          players can simply override but the board state will be passed and each
-          agent will predict on each move.
+        - Easier method for tracking player moves, this needs to be added to board
+          state to make the 7*7 input with one hot vector for previous move
 
-        - Need to return the board in a format usable as input for the Agents.
-
-        - Add reward function to Agents that increases reward for creating lines
-          of pieces.
 """
 
 
@@ -42,7 +33,7 @@ def setup_Agent(filename, epsilon):
 
     agent = Agent(lr=0.001, gamma=0.95, epsilon=epsilon, epsilon_dec=0.995, epsilon_min=0.01,
                   input_shape=input_dims, h1_dims=h1_dims, h2_dims=h2_dims, action_space=action_space,
-                  fname=filename
+                  training_epochs=1, fname=filename
                   )
 
     return agent
