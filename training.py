@@ -15,6 +15,11 @@ import time
         - 2 Dense, 1 output, no output activation
 
 
+    ADD:
+
+        - Add functionality to load the winningest agent to both every X episodes
+
+
 """
 
 
@@ -82,7 +87,7 @@ Main training Lopp
 if __name__ == '__main__':
 
     train = True
-    load = False
+    load = True
 
     # True uses player 2 as a random agent rather than a DQN agent
     # Will only store memory and train agent 1
@@ -95,7 +100,7 @@ if __name__ == '__main__':
     filename_1 = 'p1.h5'
     filename_2 = 'p2.h5'
 
-    agent_1, memory_1 = setup_Agent(filename_1, epsilon=1)
+    agent_1, memory_1 = setup_Agent(filename_1, epsilon=0.4)
 
     agent_2, memory_2 = setup_Agent(filename_2, epsilon=1)
 
@@ -200,7 +205,7 @@ if __name__ == '__main__':
 
         p1_wins.append(wins[0] / episode)
         p2_wins.append(wins[1] / episode)
-        draws.append(wins[2])
+        draws.append(wins[2] / episode)
         moves.append(frame)
 
         plot_progress(episode, p1_wins, p2_wins, draws, moves, filename='progress.png')

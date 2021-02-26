@@ -68,7 +68,7 @@ def plot_progress(episode, p1_wins, p2_wins, draws, moves, filename='progress.pn
     """
     x = list(range(episode))
     
-    fig, ax1 = plt.subplots()
+    fig1, ax1 = plt.subplots()
 
     ax1.set_xlabel('Episodes')
     ax1.set_ylabel('Game Wins')
@@ -77,15 +77,21 @@ def plot_progress(episode, p1_wins, p2_wins, draws, moves, filename='progress.pn
     line2, = ax1.plot(x, p2_wins)
     line3, = ax1.plot(x, draws)
 
-    ax2 = ax1.twinx()
-    ax2.set_ylabel('Moves per Episode')
-    line4, = ax2.plot(x, moves, color='black')
-
-
-    plt.legend((line1, line2, line3, line4), ('Player 1', 'Player 2', 'Draws', 'Moves'),
-               loc='lower right')
+    plt.legend((line1, line2, line3), ('Player 1', 'Player 2', 'Draws'),
+               loc='upper left')
 
     plt.savefig(filename)
+
+    plt.close()
+
+
+    fig2, ax2 = plt.subplots()
+
+    ax2.set_xlabel('Episodes')
+    ax2.set_ylabel('Moves per Episode')
+    line4, = ax2.plot(x, moves)
+
+    plt.savefig('moves.png')
 
     plt.close()
 
