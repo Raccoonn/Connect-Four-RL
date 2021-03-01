@@ -62,7 +62,7 @@ class ReplayBuffer(object):
 
 
 
-def plot_progress(episode, p1_wins, p2_wins, draws, moves, filename='progress.png'):
+def plot_progress(episode, p1_wins, p2_wins, draws, moves, filename='progress'):
     """
     Plot progress and save to file during trtaining
     """
@@ -75,12 +75,12 @@ def plot_progress(episode, p1_wins, p2_wins, draws, moves, filename='progress.pn
 
     line1, = ax1.plot(x, p1_wins)
     line2, = ax1.plot(x, p2_wins)
-    line3, = ax1.plot(x, draws)
+    # line3, = ax1.plot(x, draws)
 
-    plt.legend((line1, line2, line3), ('Player 1', 'Player 2', 'Draws'),
+    plt.legend((line1, line2), ('Player 1', 'Player 2'),
                loc='upper left')
 
-    plt.savefig(filename)
+    plt.savefig(filename + '.png')
 
     plt.close()
 
@@ -89,9 +89,9 @@ def plot_progress(episode, p1_wins, p2_wins, draws, moves, filename='progress.pn
 
     ax2.set_xlabel('Episodes')
     ax2.set_ylabel('Moves per Episode')
-    line4, = ax2.plot(x, moves)
+    line4, = ax2.plot(x, moves, '.')
 
-    plt.savefig('moves.png')
+    plt.savefig(filename + '_moves.png')
 
     plt.close()
 
